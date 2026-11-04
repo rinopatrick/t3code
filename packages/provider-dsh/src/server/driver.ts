@@ -5,7 +5,6 @@ import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
 
-import type * as ProviderHost from "@t3tools/provider-core/server/ProviderHost";
 import { makeDshAdapterV2Driver, type DshAdapterV2DriverEnv } from "./adapter.ts";
 import { ProviderDriverError } from "@t3tools/provider-core/server/errors";
 import { checkDshProviderStatus, makePendingDshProvider } from "./status.ts";
@@ -45,10 +44,7 @@ const unsupportedTextGeneration: ProviderTextGeneration = (() => {
   };
 })();
 
-export type DshDriverEnv =
-  | DshAdapterV2DriverEnv
-  | ChildProcessSpawner.ChildProcessSpawner
-  | ProviderHost.ProviderHost;
+export type DshDriverEnv = DshAdapterV2DriverEnv;
 
 export const DshDriver: ProviderDriver<DshSettings, DshDriverEnv> = {
   driverKind: DSH_DRIVER_KIND,
@@ -67,10 +63,8 @@ export const DshDriver: ProviderDriver<DshSettings, DshDriverEnv> = {
     config,
   }) {
     const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
-    const processEnv = yield* mergeProviderInstanceEnvironment(
-      environment,
-      yield* HostProcess.Environment,
-    );
+    const hostEnvironment = yield* HostProcess.Environment;
+    const processEnv = yield* mergeProviderInstanceEnvironment(environment, hostEnvironment);
     const continuationIdentity = defaultProviderContinuationIdentity({
       driverKind: DSH_DRIVER_KIND,
       instanceId,
