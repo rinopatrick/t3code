@@ -9,6 +9,7 @@ import { acpRegistryClient } from "@t3tools/provider-acp-registry/client";
 import { makeProviderClientRegistry } from "@t3tools/provider-core/client";
 import { modelShortName } from "@t3tools/provider-core/modelShortName";
 import { cursorClient } from "@t3tools/provider-cursor/client";
+import { dshClient } from "@t3tools/provider-dsh/client";
 import { fxClient } from "@t3tools/provider-fx/client";
 import { grokClient } from "@t3tools/provider-grok/client";
 import { kiroClient } from "@t3tools/provider-kiro/client";
@@ -43,6 +44,7 @@ export const providerClients = makeProviderClientRegistry([
     settingsSchema: AntigravitySettings,
   },
   kiroClient,
+  dshClient,
   museClient,
   piClient,
   acpRegistryClient,
