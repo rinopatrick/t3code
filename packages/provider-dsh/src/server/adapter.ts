@@ -48,6 +48,12 @@ export const DshProviderCapabilitiesV2 = {
     canReadThreadSnapshot: false,
     canRollbackThread: false,
   },
+  tools: {
+    ...AcpProviderCapabilitiesV2.tools,
+    // Live initialize advertises mcpCapabilities.http=true; the shared
+    // MCP-over-ACP bridge activates on that offer. Grok/fx precedent.
+    supportsMcpTools: true,
+  },
   turns: {
     ...AcpProviderCapabilitiesV2.turns,
     // Proven live: interruptTurn settles a sleep-prompt turn as interrupted

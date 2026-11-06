@@ -55,7 +55,7 @@ it.effect("models advertise the wire reasoning_effort selector", () =>
   }),
 );
 
-it.effect("declares honest slice-4/5 base: no image override, no resume override, MCP negotiated", () =>
+it.effect("declares honest slice-4/5 base: MCP on per live wire, snapshot/rollback off", () =>
   Effect.gen(function* () {
     const caps = DshProviderCapabilitiesV2;
     expect(caps.threads.canReadThreadSnapshot).toBe(false);
@@ -63,7 +63,7 @@ it.effect("declares honest slice-4/5 base: no image override, no resume override
     expect(caps.threads.canForkFromTurn).toBe(false);
     expect(caps.checkpointing.providerCanRollbackConversation).toBe(false);
     expect(caps.checkpointing.providerCanReadConversationSnapshot).toBe(false);
-    expect(caps.tools.supportsMcpTools).toBe(false);
+    expect(caps.tools.supportsMcpTools).toBe(true);
     expect(caps.approvals.supportsCommandApproval).toBe(false);
     expect(caps.approvals.supportsFileReadApproval).toBe(false);
     expect(caps.approvals.supportsFileChangeApproval).toBe(false);

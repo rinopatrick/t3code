@@ -55,12 +55,14 @@ Image input is not supported. The harness advertises
 `promptCapabilities.image=false`, and inline image prompts are rejected by the
 wire before they run. Send text only.
 
-Tool calls, MCP tools, and session resume work through the harness's ACP
-server. Context usage from the harness's `usage_update` frames appears as the
-thread's context usage. Approvals, thread rollback, and conversation rewind
-are unavailable: the harness wire has no approval requests, no session/load,
-and no truncation, so T3 Code declares them off rather than imitating them.
-Forking starts a new session with a copy of the conversation context.
+Tool calls and MCP tools work through the harness's ACP server, which
+advertises MCP over HTTP. Session resume works across processes through the
+harness's `session/resume`. Context usage from the harness's `usage_update`
+frames appears as the thread's context usage. Approvals, thread rollback,
+forking, and conversation rewind are unavailable: the harness wire has no
+approval requests, no session/load, no fork, and no truncation, so T3 Code
+declares them off rather than imitating them. Switching providers can still
+pass conversation context as a handoff.
 
 To stop using DeepSeek Harness in an environment, disable it in
 **Settings → Providers**. This keeps the host's harness sign-in, thread
