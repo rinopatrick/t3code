@@ -4,7 +4,6 @@ import { DshSettings } from "../settings.ts";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Schema from "effect/Schema";
-import { vi } from "vite-plus/test";
 
 import { writeFakeCli } from "@t3tools/provider-testing/fakeCli";
 import { COMPACT_SLASH_COMMAND } from "@t3tools/provider-core/server/snapshotProbe";
@@ -46,6 +45,7 @@ it.layer(NodeServices.layer)("Dsh status", (it) => {
         expect(snapshot.version).toBe("0.2.1-rc.5");
         expect(snapshot.models.map((model) => model.slug)).toEqual([
           "deepseek-v4-flash",
+          "deepseek-v4-flash-official",
           "deepseek-v4-pro",
         ]);
       }),

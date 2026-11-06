@@ -16,6 +16,11 @@ const DSH_DEFAULT_MODELS: ReadonlyArray<{ slug: string; name: string; sessionId:
     sessionId: '["deepseek-account","deepseek-flash"]',
   },
   {
+    slug: "deepseek-v4-flash-official",
+    name: "DeepSeek V4 Flash (Official API)",
+    sessionId: '["deepseek-official","deepseek-v4-flash"]',
+  },
+  {
     slug: "deepseek-v4-pro",
     name: "DeepSeek V4 Pro",
     sessionId: '["deepseek-account","deepseek-v4-pro"]',
