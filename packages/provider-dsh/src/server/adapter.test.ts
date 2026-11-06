@@ -24,11 +24,12 @@ it.effect("reports slice-3 capabilities with model switch on, interrupt on, stee
   }),
 );
 
-it.effect("model catalog lists flash and pro", () =>
+it.effect("model catalog lists account flash, official flash, and pro", () =>
   Effect.gen(function* () {
     const models = yield* discoverDshModels(settings({}));
     expect(models.map((model) => model.slug)).toEqual([
       "deepseek-v4-flash",
+      "deepseek-v4-flash-official",
       "deepseek-v4-pro",
     ]);
   }),
@@ -54,10 +55,28 @@ it.effect("models advertise the wire reasoning_effort selector", () =>
   }),
 );
 
+it.effect("declares honest slice-4/5 base: MCP on per live wire, snapshot/rollback off", () =>
+  Effect.gen(function* () {
+    const caps = DshProviderCapabilitiesV2;
+    expect(caps.threads.canReadThreadSnapshot).toBe(false);
+    expect(caps.threads.canForkThread).toBe(false);
+    expect(caps.threads.canForkFromTurn).toBe(false);
+    expect(caps.checkpointing.providerCanRollbackConversation).toBe(false);
+    expect(caps.checkpointing.providerCanReadConversationSnapshot).toBe(false);
+    expect(caps.tools.supportsMcpTools).toBe(true);
+    expect(caps.approvals.supportsCommandApproval).toBe(false);
+    expect(caps.approvals.supportsFileReadApproval).toBe(false);
+    expect(caps.approvals.supportsFileChangeApproval).toBe(false);
+  }),
+);
+
 it.effect("session model ids match the wire-advertised JSON pairs", () =>
   Effect.gen(function* () {
     expect(DSH_SESSION_MODEL_IDS.get("deepseek-v4-flash")).toBe(
       '["deepseek-account","deepseek-flash"]',
+    );
+    expect(DSH_SESSION_MODEL_IDS.get("deepseek-v4-flash-official")).toBe(
+      '["deepseek-official","deepseek-v4-flash"]',
     );
     expect(DSH_SESSION_MODEL_IDS.get("deepseek-v4-pro")).toBe(
       '["deepseek-account","deepseek-v4-pro"]',

@@ -6,7 +6,7 @@ import { DshSettings } from "./settings.ts";
 export const dshClient = defineProviderClient({
   driverKind: ProviderDriverKind.make("dsh"),
   label: "DeepSeek Harness",
-  modelFamilies: ["DeepSeek "],
+  modelFamilies: ["DeepSeek"],
   settingsSchema: DshSettings,
   icon: {
     viewBox: "0 0 32 32",

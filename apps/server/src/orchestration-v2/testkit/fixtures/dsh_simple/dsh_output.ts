@@ -27,4 +27,12 @@ export function assertDshSimpleOutput(
   assertVisibleTurnItemsMirrorLocalTurnItems(projection);
   assertUserMessagesInclude(projection, [SIMPLE_PROMPT]);
   assert.equal(projection.providerTurns[0]?.status, "completed");
+  const usageThread = projection.providerThreads.find(
+    (thread) => thread.contextUsage !== null,
+  );
+  assert.isDefined(usageThread, "usage_update must land on a provider thread");
+  assert.deepInclude(usageThread?.contextUsage, {
+    usedTokens: 25886,
+    maxTokens: 1048576,
+  });
 }

@@ -13,8 +13,7 @@
 import * as NodeChildProcess from "node:child_process";
 import * as NodeFS from "node:fs";
 
-const DSH_BIN =
-  "C:\\Users\\patri\\AppData\\Local\\Programs\\DeepSeek Harness\\resources\\runtime\\cli\\bin\\dsh.cmd";
+const DSH_BIN = readArg("--bin") ?? process.env.T3_DSH_BIN ?? "dsh";
 
 function readArg(name: string): string | undefined {
   const index = process.argv.indexOf(name);
@@ -22,6 +21,7 @@ function readArg(name: string): string | undefined {
 }
 
 const outPath = readArg("--out");
+const recordCwd = readArg("--cwd") ?? process.cwd();
 if (!outPath) throw new Error("Pass --out <path>");
 const promptText = readArg("--prompt") ?? "reply with exactly: PONG";
 
@@ -195,7 +195,7 @@ async function main(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 5000));
   await send({ jsonrpc: "2.0", method: "notifications/initialized" });
   await new Promise((resolve) => setTimeout(resolve, 3000));
-  await send({ jsonrpc: "2.0", id: 2, method: "session/new", params: { cwd: "C:/Users/patri/Projects", mcpServers: [] } });
+  await send({ jsonrpc: "2.0", id: 2, method: "session/new", params: { cwd: recordCwd, mcpServers: [] } });
   sessionId = await waitForSessionId();
   if (!sessionIds.includes(sessionId)) sessionIds.push(sessionId);
 
