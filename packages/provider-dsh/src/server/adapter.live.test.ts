@@ -32,6 +32,9 @@ const layerSession = Layer.mergeAll(
   ),
 );
 
+// Gated on DSH_LIVE: without it this test returns immediately on the
+// TestClock without spawning. With DSH_LIVE=1 it drives the real binary
+// (wall-clock subprocess work) like the acp clientTerminals live tests.
 it.layer(layerSession)("live", (it) => {
   it.effect(
     "live: openSession starts the real dsh runtime and reports capabilities",

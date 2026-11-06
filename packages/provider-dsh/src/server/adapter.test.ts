@@ -33,6 +33,26 @@ it.effect("model catalog lists flash and pro", () =>
   }),
 );
 
+it.effect("models advertise the wire reasoning_effort selector", () =>
+  Effect.gen(function* () {
+    const models = yield* discoverDshModels(settings({}));
+    for (const model of models) {
+      const descriptor = model.capabilities.optionDescriptors?.find(
+        (candidate) => candidate.id === "reasoning_effort",
+      );
+      expect(descriptor?.type).toBe("select");
+      if (descriptor?.type !== "select") continue;
+      expect(descriptor.options.map((option) => option.id)).toEqual([
+        "off",
+        "low",
+        "high",
+        "max",
+      ]);
+      expect(descriptor.role).toBe("reasoning");
+    }
+  }),
+);
+
 it.effect("session model ids match the wire-advertised JSON pairs", () =>
   Effect.gen(function* () {
     expect(DSH_SESSION_MODEL_IDS.get("deepseek-v4-flash")).toBe(
