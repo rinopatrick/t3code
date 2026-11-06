@@ -50,7 +50,10 @@ export const DshProviderCapabilitiesV2 = {
   },
   turns: {
     ...AcpProviderCapabilitiesV2.turns,
-    supportsInterrupt: false,
+    // Proven live: interruptTurn settles a sleep-prompt turn as interrupted
+    // via session/cancel (cancelBehavior wait-for-prompt). Steering stays off:
+    // interrupt-and-restart steering is unproven on this wire.
+    supportsInterrupt: true,
     supportsSteeringByInterruptRestart: false,
   },
   approvals: {

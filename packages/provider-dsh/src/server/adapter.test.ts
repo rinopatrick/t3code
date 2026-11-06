@@ -8,14 +8,17 @@ import { DSH_SESSION_MODEL_IDS, discoverDshModels } from "./modelCatalog.ts";
 
 const settings = Schema.decodeSync(DshSettings);
 
-it.effect("reports slice-2 capabilities with model switch on, interrupt off", () =>
+it.effect("reports slice-3 capabilities with model switch on, interrupt on, steering off", () =>
   Effect.gen(function* () {
     const parsed = settings({});
     expect(parsed.binaryPath).toBe("dsh");
     const caps = DshProviderCapabilitiesV2;
     expect(caps.sessions.supportsModelSwitchInSession).toBe(true);
-    expect(caps.turns.supportsInterrupt).toBe(false);
+    // Proven live 2026-11-06: interruptTurn during a sleep prompt settles
+    // the turn interrupted via session/cancel (cancel-probe, DSH_LIVE=1).
+    expect(caps.turns.supportsInterrupt).toBe(true);
     expect(caps.turns.supportsSteeringByInterruptRestart).toBe(false);
+    expect(caps.turns.supportsQueuedMessages).toBe(true);
     expect(caps.threads.canRollbackThread).toBe(false);
     expect(caps.threads.canForkThread).toBe(false);
     expect(caps.approvals.supportsCommandApproval).toBe(false);
