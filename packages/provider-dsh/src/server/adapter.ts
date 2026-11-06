@@ -17,6 +17,7 @@ import type * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
 import {
   AcpProviderCapabilitiesV2,
   makeAcpAdapterV2,
+  type AcpAdapterV2Flavor,
   type AcpAdapterV2RuntimeInput,
 } from "@t3tools/provider-acp/server/adapter";
 import * as AcpSessionRuntime from "@t3tools/provider-acp/server/AcpSessionRuntime";
@@ -75,7 +76,16 @@ export const DshProviderCapabilitiesV2 = {
   },
 } satisfies OrchestrationV2ProviderCapabilities;
 
-export type DshAcpRuntimeInput = AcpSessionRuntime.AcpSessionRuntimeOptions;
+export interface DshAcpRuntimeInput {
+  readonly spawn: AcpSessionRuntime.AcpSpawnInput;
+  readonly cwd: string;
+  readonly clientInfo: { readonly name: "t3-code"; readonly version: "0.0.0" };
+  readonly cancelBehavior: "wait-for-prompt";
+  readonly clientCapabilities: {
+    readonly fs: { readonly readTextFile: true; readonly writeTextFile: false };
+    readonly terminal: false;
+  };
+}
 
 export interface DshAdapterV2Options {
   readonly instanceId: ProviderAdapterDriverCreateInput<DshSettings>["instanceId"];
@@ -83,7 +93,7 @@ export interface DshAdapterV2Options {
   readonly environment: NodeJS.ProcessEnv;
   readonly cwd: string;
   readonly makeRuntime: (
-    input: AcpSessionRuntime.AcpSessionRuntimeOptions,
+    input: AcpAdapterV2RuntimeInput,
   ) => Effect.Effect<
     AcpSessionRuntime.AcpSessionRuntime["Service"],
     EffectAcpErrors.AcpError,
@@ -91,6 +101,8 @@ export interface DshAdapterV2Options {
   >;
   readonly nativeLogging?: Parameters<typeof makeAcpAdapterV2>[0]["nativeLogging"];
   readonly continuationRequests?: Parameters<typeof makeAcpAdapterV2>[0]["continuationRequests"];
+  readonly assertComplete?: AcpAdapterV2Flavor["assertComplete"];
+  readonly testHooks?: Parameters<typeof makeAcpAdapterV2>[0]["testHooks"];
 }
 
 export type DshAdapterV2DriverEnv =
@@ -110,19 +122,7 @@ export const makeDshAdapterV2 = Effect.fn("makeDshAdapterV2")(function* (
     input: AcpAdapterV2RuntimeInput,
   ) {
     const scope = yield* Scope.fork(yield* Effect.scope);
-    return yield* options
-      .makeRuntime({
-        ...input,
-        spawn: buildDshAcpSpawnInput({
-          binaryPath: options.settings.binaryPath,
-          cwd: options.cwd,
-          baseEnv: options.environment,
-        }),
-        clientInfo: { name: "t3-code", version: "0.0.0" },
-        cancelBehavior: "wait-for-prompt",
-        clientCapabilities: { fs: { readTextFile: true, writeTextFile: false }, terminal: false },
-      })
-      .pipe(Effect.provideService(Scope.Scope, scope));
+    return yield* options.makeRuntime(input).pipe(Effect.provideService(Scope.Scope, scope));
   });
   return yield* makeAcpAdapterV2({
     instanceId: options.instanceId,
@@ -132,12 +132,14 @@ export const makeDshAdapterV2 = Effect.fn("makeDshAdapterV2")(function* (
       makeRuntime,
       resolveModelId: (selection) =>
         DSH_SESSION_MODEL_IDS.get(selection.model) ?? selection.model,
+      ...(options.assertComplete === undefined ? {} : { assertComplete: options.assertComplete }),
     },
     selfInvocation: yield* resolveSelfInvocation(),
     ...(options.nativeLogging === undefined ? {} : { nativeLogging: options.nativeLogging }),
     ...(options.continuationRequests === undefined
       ? {}
       : { continuationRequests: options.continuationRequests }),
+    ...(options.testHooks === undefined ? {} : { testHooks: options.testHooks }),
   });
 });
 
@@ -156,9 +158,20 @@ export const makeDshAdapterV2Driver = (): ProviderAdapterDriver<
     const cwd = processEnvironment.PWD ?? process.cwd();
     const random = yield* SecureRandom.SecureRandom;
     const makeRuntime = Effect.fn("DshDriver.makeRuntime")(function* (
-      runtimeInput: AcpSessionRuntime.AcpSessionRuntimeOptions,
+      runtimeInput: AcpAdapterV2RuntimeInput,
     ) {
-      const context = yield* Layer.build(AcpSessionRuntime.layer(runtimeInput)).pipe(
+      const fullInput: AcpSessionRuntime.AcpSessionRuntimeOptions = {
+        ...runtimeInput,
+        spawn: buildDshAcpSpawnInput({
+          binaryPath: input.config.binaryPath,
+          cwd,
+          baseEnv: processEnvironment,
+        }),
+        clientInfo: { name: "t3-code", version: "0.0.0" },
+        cancelBehavior: "wait-for-prompt",
+        clientCapabilities: { fs: { readTextFile: true, writeTextFile: false }, terminal: false },
+      };
+      const context = yield* Layer.build(AcpSessionRuntime.layer(fullInput)).pipe(
         Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, spawner),
         Effect.provideService(SecureRandom.SecureRandom, random),
       );

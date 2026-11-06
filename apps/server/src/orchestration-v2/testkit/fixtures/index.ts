@@ -222,6 +222,10 @@ import { assertTurnInterruptOutput } from "./turn_interrupt/codex_output.ts";
 import { turnInterruptInput } from "./turn_interrupt/input.ts";
 import { fxEarlyStopInput } from "./fx_early_stop/input.ts";
 import { assertFxEarlyStopOutput } from "./fx_early_stop/fx_output.ts";
+import { dshSimpleInput } from "./dsh_simple/input.ts";
+import { assertDshSimpleOutput } from "./dsh_simple/dsh_output.ts";
+import { dshToolCallInput } from "./dsh_tool_call/input.ts";
+import { assertDshToolCallOutput } from "./dsh_tool_call/dsh_output.ts";
 import { fxSubagentInput } from "./fx_subagent/input.ts";
 import { assertFxSubagentOutput } from "./fx_subagent/fx_output.ts";
 import { assertTurnInterruptMidToolClaudeOutput } from "./turn_interrupt_mid_tool/claude_output.ts";
@@ -243,6 +247,7 @@ import {
   CLAUDE_MODEL_SELECTION,
   CODEX_MODEL_SELECTION,
   CURSOR_MODEL_SELECTION,
+  DSH_MODEL_SELECTION,
   FX_MODEL_SELECTION,
   GROK_MODEL_SELECTION,
   KIRO_MODEL_SELECTION,
@@ -1851,6 +1856,32 @@ export const ORCHESTRATOR_REPLAY_FIXTURES: ReadonlyArray<OrchestratorReplayFixtu
         transcriptFile: new URL("./turn_interrupt/muse_transcript.ndjson", import.meta.url),
         modelSelection: MUSE_MODEL_SELECTION,
         assertOutput: assertMuseTurnInterruptOutput,
+      },
+    ],
+  },
+  {
+    name: "dsh_simple",
+    buildInput: dshSimpleInput,
+    providers: [
+      {
+        driver: ProviderDriverKind.make("dsh"),
+        transcriptFile: new URL("./dsh_simple/dsh_transcript.ndjson", import.meta.url),
+        modelSelection: DSH_MODEL_SELECTION,
+        runtimePolicyOverride: WORKSPACE_NEVER_POLICY,
+        assertOutput: assertDshSimpleOutput,
+      },
+    ],
+  },
+  {
+    name: "dsh_tool_call",
+    buildInput: dshToolCallInput,
+    providers: [
+      {
+        driver: ProviderDriverKind.make("dsh"),
+        transcriptFile: new URL("./dsh_tool_call/dsh_transcript.ndjson", import.meta.url),
+        modelSelection: DSH_MODEL_SELECTION,
+        runtimePolicyOverride: WORKSPACE_NEVER_POLICY,
+        assertOutput: assertDshToolCallOutput,
       },
     ],
   },

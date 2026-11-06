@@ -346,6 +346,12 @@ export const FX_MODEL_SELECTION = {
   model: "default",
 } satisfies ModelSelection;
 
+/** dsh fixtures run on the recorded account-route flash id; replay maps it back. */
+export const DSH_MODEL_SELECTION = {
+  instanceId: ProviderInstanceId.make("dsh"),
+  model: "deepseek-v4-flash",
+} satisfies ModelSelection;
+
 /** Kiro's cheapest listed model, so recordings stay cheap and do not depend on "auto" routing. */
 export const KIRO_MODEL_SELECTION = {
   instanceId: ProviderInstanceId.make("kiro"),
