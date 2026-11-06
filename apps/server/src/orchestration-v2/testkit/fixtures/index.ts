@@ -218,6 +218,7 @@ import { toolCallWorkspaceNeverInput } from "./tool_call_workspace_never/input.t
 import { assertTurnInterruptClaudeOutput } from "./turn_interrupt/claude_output.ts";
 import { assertCommandOutputStreamingOutput } from "./command_output_streaming/output.ts";
 import { commandOutputStreamingInput } from "./command_output_streaming/input.ts";
+import { assertDshTurnInterruptOutput } from "./turn_interrupt/dsh_output.ts";
 import { assertTurnInterruptOutput } from "./turn_interrupt/codex_output.ts";
 import { turnInterruptInput } from "./turn_interrupt/input.ts";
 import { fxEarlyStopInput } from "./fx_early_stop/input.ts";
@@ -1651,6 +1652,12 @@ export const ORCHESTRATOR_REPLAY_FIXTURES: ReadonlyArray<OrchestratorReplayFixtu
         modelSelection: ACP_REGISTRY_MODEL_SELECTION,
         assertOutput: assertQueuedTurnOutput,
       },
+      {
+        driver: ProviderDriverKind.make("dsh"),
+        transcriptFile: new URL("./queued_turn/dsh_transcript.ndjson", import.meta.url),
+        modelSelection: DSH_MODEL_SELECTION,
+        assertOutput: assertQueuedTurnOutput,
+      },
     ],
   },
   {
@@ -1856,6 +1863,13 @@ export const ORCHESTRATOR_REPLAY_FIXTURES: ReadonlyArray<OrchestratorReplayFixtu
         transcriptFile: new URL("./turn_interrupt/muse_transcript.ndjson", import.meta.url),
         modelSelection: MUSE_MODEL_SELECTION,
         assertOutput: assertMuseTurnInterruptOutput,
+      },
+      {
+        driver: ProviderDriverKind.make("dsh"),
+        transcriptFile: new URL("./turn_interrupt/dsh_transcript.ndjson", import.meta.url),
+        modelSelection: DSH_MODEL_SELECTION,
+        runtimePolicyOverride: WORKSPACE_NEVER_POLICY,
+        assertOutput: assertDshTurnInterruptOutput,
       },
     ],
   },
