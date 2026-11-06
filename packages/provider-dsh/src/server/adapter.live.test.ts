@@ -2,14 +2,12 @@ import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { expect, it } from "@effect/vitest";
 import { ProviderInstanceId, ProviderSessionId, ThreadId } from "@t3tools/contracts";
-import { resolveSelfInvocation } from "@t3tools/shared/nodeRuntime";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 
 import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
 import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
 import * as SecureRandom from "effect/crypto/SecureRandom";
-import * as Scope from "effect/Scope";
 import * as Layer from "effect/Layer";
 import * as AcpSessionRuntime from "@t3tools/provider-acp/server/AcpSessionRuntime";
 import { buildDshAcpSpawnInput } from "./acpSupport.ts";
@@ -69,7 +67,7 @@ it.layer(layerSession)("live", (it) => {
         });
         const caps = yield* adapter.getCapabilities();
         expect(caps.sessions.supportsModelSwitchInSession).toBe(true);
-        expect(caps.turns.supportsInterrupt).toBe(false);
+        expect(caps.turns.supportsInterrupt).toBe(true);
         const session = yield* adapter.openSession({
           threadId: ThreadId.make("thread-dsh-live"),
           providerSessionId: ProviderSessionId.make("provider-session-dsh-live"),
