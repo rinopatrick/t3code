@@ -34,16 +34,7 @@ export const DSH_DRIVER_KIND = ProviderDriverKind.make("dsh");
 
 const DSH_DEFAULT_SETTINGS = Schema.decodeSync(DshSettings)({});
 
-/**
- * Slice 2 capabilities: what the captured dsh wire proves.
- *
- * - session/new works, model switch via session/set_config_option works
- *   (probed live: official -> account/flash), reasoning_effort advertised.
- * - session/cancel, session/set_model, session/set_config do NOT exist
- *   (method-not-found, probed live). Interrupt stays off; Stop falls back to
- *   local teardown in the runtime.
- * - promptCapabilities.image=false (probed live). Image attachment unsupported.
- */
+/** Evidenced by the dsh_simple replay fixture; cancel absent, image off. */
 export const DshProviderCapabilitiesV2 = {
   ...AcpProviderCapabilitiesV2,
   sessions: {
@@ -75,17 +66,6 @@ export const DshProviderCapabilitiesV2 = {
     providerRollbackReturnsSnapshot: false,
   },
 } satisfies OrchestrationV2ProviderCapabilities;
-
-export interface DshAcpRuntimeInput {
-  readonly spawn: AcpSessionRuntime.AcpSpawnInput;
-  readonly cwd: string;
-  readonly clientInfo: { readonly name: "t3-code"; readonly version: "0.0.0" };
-  readonly cancelBehavior: "wait-for-prompt";
-  readonly clientCapabilities: {
-    readonly fs: { readonly readTextFile: true; readonly writeTextFile: false };
-    readonly terminal: false;
-  };
-}
 
 export interface DshAdapterV2Options {
   readonly instanceId: ProviderAdapterDriverCreateInput<DshSettings>["instanceId"];

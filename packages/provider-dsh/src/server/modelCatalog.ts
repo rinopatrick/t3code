@@ -1,12 +1,13 @@
-import { ModelCapabilities, ServerProviderModel } from "@t3tools/contracts";
+import type { ModelCapabilities } from "@t3tools/contracts";
 import { DshSettings } from "../settings.ts";
+import { buildSelectOptionDescriptor } from "@t3tools/provider-core/server/snapshotProbe";
 import { createModelCapabilities } from "@t3tools/shared/model";
 import * as Effect from "effect/Effect";
 
 /**
  * Session model ids, exactly as the dsh ACP server advertises them in
- * session/new configOptions (probed live 2026-11-04). The JSON pair is the
- * id the agent accepts in set_config_option; the slug is the T3 display id.
+ * session/new configOptions. The JSON pair is the id the agent accepts
+ * in set_config_option; the slug is the T3 display id.
  */
 const DSH_DEFAULT_MODELS: ReadonlyArray<{ slug: string; name: string; sessionId: string }> = [
   {
@@ -25,8 +26,27 @@ export const DSH_SESSION_MODEL_IDS: ReadonlyMap<string, string> = new Map(
   DSH_DEFAULT_MODELS.map((model) => [model.slug, model.sessionId]),
 );
 
+/** Matches the live session/new reasoning_effort select; applied by the ACP option loop. */
+const DSH_REASONING_EFFORT_ID = "reasoning_effort";
+
 export function dshModelCapabilities(): ModelCapabilities {
-  return createModelCapabilities({ optionDescriptors: [] });
+  return createModelCapabilities({
+    optionDescriptors: [
+      {
+        ...buildSelectOptionDescriptor({
+          id: DSH_REASONING_EFFORT_ID,
+          label: "Reasoning effort",
+          options: [
+            { value: "off", label: "Off" },
+            { value: "low", label: "Low" },
+            { value: "high", label: "High", isDefault: true },
+            { value: "max", label: "Max" },
+          ],
+        }),
+        role: "reasoning" as const,
+      },
+    ],
+  });
 }
 
 export const discoverDshModels = Effect.fn("discoverDshModels")(function* (_settings: DshSettings) {
