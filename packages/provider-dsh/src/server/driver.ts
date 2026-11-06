@@ -32,7 +32,7 @@ const unsupportedTextGeneration: ProviderTextGeneration = (() => {
     Effect.fail(
       new TextGenerationError({
         operation,
-        detail: "DeepSeek Harness sessions are not implemented yet (slice 2).",
+        detail: "DeepSeek Harness does not provide headless text generation.",
       }),
     );
   return {

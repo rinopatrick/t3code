@@ -42,17 +42,17 @@ it.layer(layerSession)("live", (it) => {
         const instanceId = ProviderInstanceId.make("dsh-live-test");
         const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
         const random = yield* SecureRandom.SecureRandom;
-        const binaryPath =
-          "C:\\Users\\patri\\AppData\\Local\\Programs\\DeepSeek Harness\\resources\\runtime\\cli\\bin\\dsh.cmd";
+        const binaryPath = process.env.T3_DSH_BIN ?? "dsh";
+        const liveCwd = process.env.T3_DSH_LIVE_CWD ?? process.cwd();
         const adapter = yield* makeDshAdapterV2({
           instanceId,
           settings: settings({ binaryPath }),
           environment: process.env,
-          cwd: "C:/Users/patri/Projects",
+          cwd: liveCwd,
           makeRuntime: (runtimeInput) => {
             const full = {
               ...runtimeInput,
-              spawn: buildDshAcpSpawnInput({ binaryPath, cwd: "C:/Users/patri/Projects" }),
+              spawn: buildDshAcpSpawnInput({ binaryPath, cwd: liveCwd }),
             };
             return Layer.build(AcpSessionRuntime.layer(full)).pipe(
               Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, spawner),
@@ -75,7 +75,7 @@ it.layer(layerSession)("live", (it) => {
           runtimePolicy: ProviderAdapter.ProviderAdapterV2RuntimePolicy.make({
             runtimeMode: "full-access",
             interactionMode: "default",
-            cwd: "C:/Users/patri/Projects",
+            cwd: liveCwd,
           }),
         });
         expect(session.providerSession.status).toBe("ready");
