@@ -28,6 +28,7 @@ import {
 } from "@t3tools/provider-core/server/adapterDriver";
 import { buildDshAcpSpawnInput } from "./acpSupport.ts";
 import { DSH_SESSION_MODEL_IDS } from "./modelCatalog.ts";
+import { classifyDshPromptFailure } from "./promptFailure.ts";
 import * as HostProcess from "@t3tools/shared/HostProcess";
 
 export const DSH_DRIVER_KIND = ProviderDriverKind.make("dsh");
@@ -131,6 +132,7 @@ export const makeDshAcpAdapterFlavor = (input: DshAcpAdapterFlavorInput): AcpAda
     capabilities: DshProviderCapabilitiesV2,
     makeRuntime,
     resolveModelId: (selection) => DSH_SESSION_MODEL_IDS.get(selection.model) ?? selection.model,
+    promptFailure: classifyDshPromptFailure,
     ...(input.assertComplete === undefined ? {} : { assertComplete: input.assertComplete }),
   };
 };
