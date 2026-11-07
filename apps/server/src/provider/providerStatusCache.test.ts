@@ -8,7 +8,7 @@ import {
 import { createModelCapabilities } from "@t3tools/shared/model";
 import { assert, it } from "@effect/vitest";
 
-import { hydrateCachedProvider, isCachedProviderCorrelated } from "./providerStatusCache.ts";
+import { hydrateCachedProvider, isCachedProviderCorrelated, orderProviderSnapshots } from "./providerStatusCache.ts";
 
 const emptyCapabilities = createModelCapabilities({ optionDescriptors: [] });
 const CODEX_DRIVER = ProviderDriverKind.make("codex");
@@ -207,5 +207,19 @@ it.layer(NodeServices.layer)("providerStatusCache", (it) => {
       }),
       fallbackCodex,
     );
+  });
+
+  it("orders dsh with the built-in providers, not the alphabetical tail", () => {
+    const drivers = ["muse", "acpRegistry", "dsh"] as const;
+    const ordered = orderProviderSnapshots(
+      drivers.map((driver) =>
+        makeProvider(ProviderDriverKind.make(driver), {
+          displayName: driver,
+        }),
+      ),
+    ).map((provider) => provider.driver);
+    // dsh is a registered built-in: it must outrank unlisted drivers even
+    // when the unlisted driver sorts earlier alphabetically.
+    assert.deepStrictEqual(ordered, ["dsh", "acpRegistry", "muse"]);
   });
 });

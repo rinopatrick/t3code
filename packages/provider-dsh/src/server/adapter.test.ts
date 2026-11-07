@@ -29,6 +29,7 @@ import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter"
 import * as TestProviderHost from "@t3tools/provider-testing/TestProviderHost";
 import type * as AcpSessionRuntime from "@t3tools/provider-acp/server/AcpSessionRuntime";
 import type { AcpAdapterV2RuntimeInput } from "@t3tools/provider-acp/server/adapter";
+import * as EffectAcpErrors from "effect-acp/errors";
 
 import {
   DSH_DRIVER_KIND,
@@ -186,6 +187,37 @@ it.effect("dsh resume rides the shared load-vs-resume fallback, snapshot stays o
       makeRuntime: () => Effect.die("flavor unit test must not spawn a runtime"),
     });
     expect(flavor.driver).toBe(DSH_DRIVER_KIND);
+  }),
+);
+
+it.effect("quota-shaped prompt errors classify as usage_limit, others stay generic", () =>
+  Effect.sync(() => {
+    // Slice 5 closes the "usage limits are not generic failures" trap:
+    // HTTP 429 / quota-shaped ACP errors must surface as usage_limit so
+    // the thread shows Limited with a reset time instead of a generic error.
+    const flavor = makeDshAcpAdapterFlavor({
+      instanceId: ProviderInstanceId.make("dsh-flavor-usage-limit"),
+      settings: settings({}),
+      environment: {},
+      cwd: "/tmp/dsh-flavor-usage-limit",
+      makeRuntime: () => Effect.die("flavor unit test must not spawn a runtime"),
+    });
+    assert.isDefined(flavor.promptFailure, "dsh flavor must map prompt failures");
+    const quota = flavor.promptFailure!(
+      new EffectAcpErrors.AcpRequestError({
+        code: -32000,
+        errorMessage: "quota exceeded: daily budget spent",
+      }),
+    );
+    assert.equal(quota.class, "usage_limit");
+    const rateLimited = flavor.promptFailure!(
+      new EffectAcpErrors.AcpRequestError({ code: 429, errorMessage: "slow down" }),
+    );
+    assert.equal(rateLimited.class, "usage_limit");
+    const generic = flavor.promptFailure!(
+      new EffectAcpErrors.AcpRequestError({ code: -32603, errorMessage: "boom" }),
+    );
+    assert.equal(generic.class, "provider_error");
   }),
 );
 

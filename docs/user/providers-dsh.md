@@ -58,7 +58,9 @@ wire before they run. Send text only.
 Tool calls and MCP tools work through the harness's ACP server, which
 advertises MCP over HTTP. Session resume works across processes through the
 harness's `session/resume`. Context usage from the harness's `usage_update`
-frames appears as the thread's context usage. Approvals, thread rollback,
+frames appears as the thread's context usage. Quota or rate-limit errors
+surface as a Limited thread with a reset time when the harness gives one.
+Approvals, thread rollback,
 forking, and conversation rewind are unavailable: the harness wire has no
 approval requests, no session/load, no fork, and no truncation, so T3 Code
 declares them off rather than imitating them. Switching providers can still
