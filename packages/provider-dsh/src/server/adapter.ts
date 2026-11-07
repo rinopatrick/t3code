@@ -104,25 +104,43 @@ export type DshAdapterV2DriverEnv =
   | ProviderEventLoggers.ProviderEventLoggers
   | ProviderHost.ProviderHost;
 
+export interface DshAcpAdapterFlavorInput {
+  readonly instanceId: ProviderAdapterDriverCreateInput<DshSettings>["instanceId"];
+  readonly settings: DshSettings;
+  readonly environment: NodeJS.ProcessEnv;
+  readonly cwd: string;
+  readonly makeRuntime: (
+    input: AcpAdapterV2RuntimeInput,
+  ) => Effect.Effect<
+    AcpSessionRuntime.AcpSessionRuntime["Service"],
+    EffectAcpErrors.AcpError,
+    Scope.Scope
+  >;
+  readonly assertComplete?: AcpAdapterV2Flavor["assertComplete"];
+}
+
+export const makeDshAcpAdapterFlavor = (input: DshAcpAdapterFlavorInput): AcpAdapterV2Flavor => {
+  const makeRuntime = Effect.fn("DshAdapterV2.makeRuntime")(function* (
+    runtimeInput: AcpAdapterV2RuntimeInput,
+  ) {
+    const scope = yield* Scope.fork(yield* Effect.scope);
+    return yield* input.makeRuntime(runtimeInput).pipe(Effect.provideService(Scope.Scope, scope));
+  });
+  return {
+    driver: DSH_DRIVER_KIND,
+    capabilities: DshProviderCapabilitiesV2,
+    makeRuntime,
+    resolveModelId: (selection) => DSH_SESSION_MODEL_IDS.get(selection.model) ?? selection.model,
+    ...(input.assertComplete === undefined ? {} : { assertComplete: input.assertComplete }),
+  };
+};
+
 export const makeDshAdapterV2 = Effect.fn("makeDshAdapterV2")(function* (
   options: DshAdapterV2Options,
 ) {
-  const makeRuntime = Effect.fn("DshAdapterV2.makeRuntime")(function* (
-    input: AcpAdapterV2RuntimeInput,
-  ) {
-    const scope = yield* Scope.fork(yield* Effect.scope);
-    return yield* options.makeRuntime(input).pipe(Effect.provideService(Scope.Scope, scope));
-  });
   return yield* makeAcpAdapterV2({
     instanceId: options.instanceId,
-    flavor: {
-      driver: DSH_DRIVER_KIND,
-      capabilities: DshProviderCapabilitiesV2,
-      makeRuntime,
-      resolveModelId: (selection) =>
-        DSH_SESSION_MODEL_IDS.get(selection.model) ?? selection.model,
-      ...(options.assertComplete === undefined ? {} : { assertComplete: options.assertComplete }),
-    },
+    flavor: makeDshAcpAdapterFlavor(options),
     selfInvocation: yield* resolveSelfInvocation(),
     ...(options.nativeLogging === undefined ? {} : { nativeLogging: options.nativeLogging }),
     ...(options.continuationRequests === undefined
